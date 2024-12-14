@@ -1,11 +1,30 @@
 body {
     margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: black; /* Цвет фона для всей страницы */
+}
+
+canvas {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0!important;
+}
+
+#game-container {
+    width: 350px; /* Фиксированная ширина для Desktop */
+    height: 600px; 
     background: url(./img/background.png) no-repeat center center;
     background-size: cover;
     /* background: linear-gradient(to bottom, #001f3f, #0074d9); */
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    overflow: hidden;
+    background-color: #000; /* Цвет фона за пределами игры */
 }
