@@ -5,6 +5,7 @@ class StartScene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image('background', './img/background.png');
         this.load.image('playButton', './img/start-btn.png'); // Кнопка
         this.load.image('borderLeft', './img/edge_left.png'); // Левая часть контура
         this.load.image('borderRight', './img/edge_right.png'); // Правая часть контура
@@ -12,8 +13,12 @@ class StartScene extends Phaser.Scene {
     }
 
     create() {
-        // Кнопка Play
         const { width, height } = this.cameras.main;
+
+        const background = this.add.image(width / 2, height / 2, 'background');
+        background.setDisplaySize(width, height); // Масштабируем фон под размеры сцены
+        // Кнопка Play
+        
         const playButton = this.add.image(width / 2, height / 2, 'playButton').setInteractive();
         playButton.setScale(0.5);
 
@@ -42,6 +47,7 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image('background', './img/background.png');
         this.load.image('paddle', './img/paddleRed.png');
         this.load.image('ball', './img/ballBlue.png');
         this.load.image('brickRed', './img/element_red_rectangle.png');
@@ -58,7 +64,8 @@ class GameScene extends Phaser.Scene {
     create() {
 
         const { width, height } = this.cameras.main;
-
+        const background = this.add.image(width / 2, height / 2, 'background');
+        background.setDisplaySize(width, height);
         // Левая граница: высота на всю длину камеры
         const borderLeft = this.add.image(0, height / 2, 'borderLeft')
             .setOrigin(0.5, 0.5); // Центрирование относительно своей позиции
@@ -190,15 +197,17 @@ class GameScene extends Phaser.Scene {
     }
 
     loseLife() {
+        const { width, height } = this.cameras.main;
+        
         this.lives -= 1;
         this.score -= 20;
         this.livesText.setText('Lives: ' + this.lives);
         this.scoreText.setText('Score: ' + this.score);
 
-        const message = this.add.text(this.cameras.main.width / 2, 50, `Lives left: ${this.lives}`, {
+        const message = this.add.text(this.paddle.x + 80, this.paddle.y - 20, `-20`, {
             fontSize: '16px',
             fill: '#FF0000',
-            backgroundColor: '#000'
+            fontStyle: 'bold',
         }).setOrigin(0.5);
 
         this.time.delayedCall(1500, () => {
@@ -206,10 +215,13 @@ class GameScene extends Phaser.Scene {
         });
 
         if (this.lives <= 0) {
-            this.scene.start('EndScene', { score: this.score });
+            this.time.delayedCall(1500, () => {
+                this.scene.start('EndScene', { score: this.score });
+            });
         } else {
             this.resetBall();
         }
+        
     }
 
     hitPaddle(ball, paddle) {
@@ -259,10 +271,10 @@ class EndScene extends Phaser.Scene {
     }
 
     create() {
-        this.add.text(300, 150, `Game Over!`, { fontSize: '24px', fill: '#FFF' }).setOrigin(0.5);
-        this.add.text(300, 200, `Score: ${this.finalScore}`, { fontSize: '20px', fill: '#FFD700' }).setOrigin(0.5);
+        this.add.text(170, 150, `Game Over!`, { fontSize: '24px', fill: '#FFF' }).setOrigin(0.5);
+        this.add.text(170, 200, `Score: ${this.finalScore}`, { fontSize: '20px', fill: '#FFD700' }).setOrigin(0.5);
 
-        const playAgain = this.add.text(300, 300, 'Play Again', { fontSize: '20px', fill: '#FFD700' })
+        const playAgain = this.add.text(170, 300, 'Play Again', { fontSize: '20px', fill: '#FFD700' })
             .setInteractive()
             .setOrigin(0.5);
 
