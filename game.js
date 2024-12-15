@@ -5,7 +5,8 @@ class StartScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('background', './img/background.png');
+        this.load.image('background-start', './img/house-moon.png');
+        this.load.image('logo', './img/arkanoid-logo.png');
         this.load.image('playButton', './img/start-btn.png'); // Кнопка
         this.load.image('borderLeft', './img/edge_left.png'); // Левая часть контура
         this.load.image('borderRight', './img/edge_right.png'); // Правая часть контура
@@ -15,8 +16,8 @@ class StartScene extends Phaser.Scene {
     create() {
         const { width, height } = this.cameras.main;
 
-        const background = this.add.image(width / 2, height / 2, 'background');
-        background.setDisplaySize(width, height); // Масштабируем фон под размеры сцены
+        const backgroundStart = this.add.image(width / 2, height / 2, 'background-start');
+        backgroundStart.setDisplaySize(width, height); // Масштабируем фон под размеры сцены
         // Кнопка Play
         
         const playButton = this.add.image(width / 2, height / 2, 'playButton').setInteractive();
@@ -25,12 +26,13 @@ class StartScene extends Phaser.Scene {
         playButton.on('pointerdown', () => {
             this.scene.start('GameScene', { score: 0, lives: 3, time: 60 });
         });
-
-        // Текст заголовка
-        this.add.text(180, 50, 'Arkanoid', {
-            fontSize: '24px',
-            fill: '#FFFFFF'
-        }).setOrigin(0.5);
+        const logo = this.add.image(width / 2, 80, 'logo').setInteractive();
+        logo.setScale(1);
+        // // Текст заголовка
+        // this.add.text(180, 50, 'Arkanoid', {
+        //     fontSize: '24px',
+        //     fill: '#FFFFFF'
+        // }).setOrigin(0.5);
     }
 }
 
@@ -53,9 +55,9 @@ class GameScene extends Phaser.Scene {
         this.load.image('brickRed', './img/element_red_rectangle.png');
         this.load.image('brickYellow', './img/element_yellow_rectangle.png');
         this.load.image('brickGreen', './img/element_green_rectangle.png');
-        this.load.image('borderLeft', './img/edge_left.png'); // Левая часть контура
-        this.load.image('borderRight', './img/edge_right.png'); // Правая часть контура
-        this.load.image('borderTop', './img/edge_top.png'); // Верхняя часть контура
+        this.load.image('borderLeft', './img/edge_left.png'); 
+        this.load.image('borderRight', './img/edge_right.png'); 
+        this.load.image('borderTop', './img/edge_top.png'); 
 
         // Загрузка GIF-картинки взрыва
         this.load.image('explosion', './img/fireball_side_small_explode.gif');
@@ -167,7 +169,7 @@ class GameScene extends Phaser.Scene {
         const blockHeight = 20; // Высота блока
         const rows = 3; // Количество рядов
         const colors = ['brickRed', 'brickYellow', 'brickGreen']; // Цвета блоков
-        const points = [10, 15, 20]; // Очки за каждый цвет
+        const points = [20, 15, 10]; // Очки за каждый цвет
 
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < 10; col++) {
@@ -233,8 +235,6 @@ class GameScene extends Phaser.Scene {
         const points = brick.getData('points');
         this.score += points;
         this.scoreText.setText('Score: ' + this.score);
-
-        // Отображение текста очков чуть правее
         const scoreText = this.add.text(brick.x + 20, brick.y, `+${points}`, {
             fontSize: '14px',
             fill: '#FFFF00'
@@ -243,8 +243,6 @@ class GameScene extends Phaser.Scene {
         this.time.delayedCall(300, () => {
             scoreText.destroy();
         });
-
-        // Отображение GIF взрыва чуть левее
         const explosion = this.add.image(brick.x - 20, brick.y, 'explosion');
         explosion.setScale(0.6);
 
@@ -269,8 +267,14 @@ class EndScene extends Phaser.Scene {
     init(data) {
         this.finalScore = data.score;
     }
-
+    preload() {
+        this.load.image('background-end', './img/start-back.png');
+    }
     create() {
+        const { width, height } = this.cameras.main;
+        const backgroundEnd = this.add.image(width / 2, height / 2, 'background-end');
+        backgroundEnd.setDisplaySize(width, height);
+
         this.add.text(170, 150, `Game Over!`, { fontSize: '24px', fill: '#FFF' }).setOrigin(0.5);
         this.add.text(170, 200, `Score: ${this.finalScore}`, { fontSize: '20px', fill: '#FFD700' }).setOrigin(0.5);
 
