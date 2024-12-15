@@ -1,3 +1,75 @@
+class IntroScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'IntroScene' });
+    }
+
+    preload() {
+        this.load.image('stars', './img/background.png'); // Фон со звёздами
+    }
+
+    create() {
+        const { width, height } = this.cameras.main;
+
+        // Анимация звёздного фона
+        const stars = this.add.tileSprite(width / 2, height / 2, width, height, 'stars');
+        this.time.addEvent({
+            delay: 10,
+            callback: () => {
+                stars.tilePositionY -= 1; // Движение звёзд вниз
+            },
+            loop: true
+        });
+
+        // Ползущий текст
+        const introText = this.add.text(width / 2, height, `
+            Давным-давно в далёкой-далёкой галактике...
+
+            Эпизод I
+            Пробуждение Арканоида
+
+            Галактика в опасности.
+            На горизонте появился вражеский корабль,
+            угрожающий уничтожить мирные планеты.
+
+            Твоя миссия:
+            разрушить блоки защиты корабля,
+            победить врага и спасти планету.
+
+            Да пребудет с тобой сила!
+        `, {
+            fontSize: '16px',
+            color: '#FFFF00',
+            align: 'center',
+            fontStyle: 'bold',
+            wordWrap: { width: width - 20 }
+        }).setOrigin(0.5);
+
+        // Анимация движения текста вверх
+        this.tweens.add({
+            targets: introText,
+            y: -200,
+            duration: 15000, // Длительность анимации (15 секунд)
+            ease: 'Linear',
+            onComplete: () => {
+                this.scene.start('StartScene'); // Переход к StartScene после окончания
+            }
+        });
+
+        // Текст "Нажмите, чтобы пропустить"
+        const skipText = this.add.text(width / 2, height - 30, 'Нажмите, чтобы пропустить', {
+            fontSize: '14px',
+            color: '#FFFFFF'
+        }).setOrigin(0.5);
+
+        // Переход к StartScene при клике
+        this.input.once('pointerdown', () => {
+            this.scene.start('StartScene');
+        });
+    }
+}
+
+
+
 // === Сцена 1: Стартовая ===
 class StartScene extends Phaser.Scene {
     constructor() {
@@ -50,7 +122,7 @@ class GameScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background', './img/background.png');
-        this.load.image('paddle', './img/paddleRed.png');
+        this.load.image('paddle', './img/player.png');
         this.load.image('ball', './img/ballBlue.png');
         this.load.image('brickRed', './img/element_red_rectangle.png');
         this.load.image('brickYellow', './img/element_yellow_rectangle.png');
@@ -305,7 +377,7 @@ const config = {
         default: 'arcade',
         arcade: { gravity: { y: 0 }, debug: false }
     },
-    scene: [StartScene, GameScene, EndScene]
+    scene: [IntroScene, StartScene, GameScene, EndScene]
 };
 
 const game = new Phaser.Game(config);
