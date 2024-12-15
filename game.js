@@ -122,7 +122,7 @@ class GameScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background', './img/background.png');
-        this.load.image('paddle', './img/player.png');
+        this.load.image('paddle', './img/paddleRed.png');
         this.load.image('ball', './img/ballBlue.png');
         this.load.image('brickRed', './img/element_red_rectangle.png');
         this.load.image('brickYellow', './img/element_yellow_rectangle.png');
