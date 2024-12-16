@@ -5,6 +5,7 @@ class IntroScene extends Phaser.Scene {
 
     preload() {
         this.load.image('stars', './img/background.png'); // Фон со звёздами
+        // this.load.audio('introMusic', './audio/intro.mp3');
     }
 
     create() {
@@ -19,6 +20,13 @@ class IntroScene extends Phaser.Scene {
             },
             loop: true
         });
+
+        // Обработчик пропуска сцены
+        this.input.once('pointerdown', () => {
+
+            this.scene.start('StartScene');
+        });
+
 
         // Ползущий текст
         const introText = this.add.text(width / 2 - 10, height, `
@@ -66,6 +74,12 @@ class IntroScene extends Phaser.Scene {
             this.scene.start('StartScene');
         });
     }
+    startNextScene(nextScene) {
+        this.cameras.main.fadeOut(1000); // Затухание (1 секунда)
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+            this.scene.start(nextScene);
+        });
+    }
 }
 
 
@@ -83,10 +97,15 @@ class StartScene extends Phaser.Scene {
         this.load.image('borderLeft', './img/edge_left.png'); // Левая часть контура
         this.load.image('borderRight', './img/edge_right.png'); // Правая часть контура
         this.load.image('borderTop', './img/edge_top.png'); // Верхняя часть контура
+
     }
 
     create() {
         const { width, height } = this.cameras.main;
+
+
+        this.cameras.main.fadeIn(1000);
+
 
         const backgroundStart = this.add.image(width / 2, height / 2, 'background-start');
         backgroundStart.setDisplaySize(width, height); // Масштабируем фон под размеры сцены
@@ -94,17 +113,14 @@ class StartScene extends Phaser.Scene {
 
         const playButton = this.add.image(width / 2, height / 2 + 100, 'playButton').setInteractive();
         playButton.setScale(0.4);
-
         playButton.on('pointerdown', () => {
+
+            // Переход к `GameScene` и запуск её музыки
             this.scene.start('GameScene', { score: 0, lives: 3, time: 60 });
         });
+
         const logo = this.add.image(width / 2, 80, 'logo').setInteractive();
         logo.setScale(1);
-        // // Текст заголовка
-        // this.add.text(180, 50, 'Arkanoid', {
-        //     fontSize: '24px',
-        //     fill: '#FFFFFF'
-        // }).setOrigin(0.5);
     }
 }
 
@@ -117,19 +133,21 @@ class GameScene extends Phaser.Scene {
     init(data) {
         this.score = data.score;
         this.lives = data.lives;
-        this.remainingTime = data.time;
+        this.remainingTime = 90;
     }
 
     preload() {
         this.load.image('background', './img/background.png');
-        this.load.image('paddle', './img/paddleRed.png');
-        this.load.image('ball', './img/ballBlue.png');
+        this.load.image('paddle', './img/paddle-space.png');
+        this.load.image('ball', './img/ball-fire.png');
         this.load.image('brickRed', './img/element_red_rectangle.png');
         this.load.image('brickYellow', './img/element_yellow_rectangle.png');
         this.load.image('brickGreen', './img/element_green_rectangle.png');
         this.load.image('borderLeft', './img/edge_left.png');
         this.load.image('borderRight', './img/edge_right.png');
         this.load.image('borderTop', './img/edge_top.png');
+        this.load.image('enemyShip', './img/space-shooter.png');
+        this.load.audio('backgroundMusic', './audio/imperial-march.mp3');
 
         // Загрузка GIF-картинки взрыва
         this.load.image('explosion', './img/fireball_side_small_explode.gif');
@@ -138,8 +156,32 @@ class GameScene extends Phaser.Scene {
     create() {
 
         const { width, height } = this.cameras.main;
+
+
         const background = this.add.image(width / 2, height / 2, 'background');
         background.setDisplaySize(width, height);
+
+
+        // Создание корабля
+        this.enemyShip = this.physics.add.sprite(width / 2, 70, 'enemyShip');
+        this.enemyShip.setCollideWorldBounds(true); // Позволяет объекту столкнуться с границами мира
+        this.enemyShip.setBounce(1); // Обеспечивает отскок при столкновении с границей
+        this.enemyShip.setVelocityX(150); // Задает начальную скорость вправо
+        this.enemyHits = 0;
+
+        // Фоновая музыка
+        this.backgroundMusic = this.sound.add('backgroundMusic', {
+            loop: true,
+            volume: 0.5
+        });
+        this.backgroundMusic.play();
+        this.events.on('shutdown', () => {
+            if (this.backgroundMusic) {
+                this.backgroundMusic.stop();
+                console.log('Background music stopped in GameScene');
+            }
+        });
+
         // Левая граница: высота на всю длину камеры
         const borderLeft = this.add.image(0, height / 2, 'borderLeft')
             .setOrigin(0.5, 0.5); // Центрирование относительно своей позиции
@@ -162,8 +204,12 @@ class GameScene extends Phaser.Scene {
 
         // Текст для отображения очков, жизней и таймера
         this.scoreText = this.add.text(10, 10, 'Score: ' + this.score, { fontSize: '16px', fill: '#FFF' });
-        this.livesText = this.add.text(10, 30, 'Lives: ' + this.lives, { fontSize: '16px', fill: '#FFF' });
-        this.timerText = this.add.text(width - 100, 10, 'Time: ' + this.remainingTime, { fontSize: '16px', fill: '#FFF' });
+        this.livesText = this.add.text(250, 10, 'Lives: ' + this.lives, { fontSize: '16px', fill: '#FFF' });
+        this.timerText = this.add.text(width / 2, 20, '01:30', {
+            fontSize: '24px',
+            fill: '#FFFF00',
+            fontStyle: 'bold',
+        }).setOrigin(0.5, 0.5);
 
         // Таймер на 1 минуту
         this.timer = this.time.addEvent({
@@ -182,6 +228,7 @@ class GameScene extends Phaser.Scene {
         this.ball.setCollideWorldBounds(true);
         this.ball.setBounce(1);
         this.ball.setData('onPaddle', true);
+        this.ball.setDisplaySize(30, 30); 
 
         // Отключаем коллизию мяча с нижней границей
         this.physics.world.setBoundsCollision(true, true, true, false);
@@ -203,9 +250,24 @@ class GameScene extends Phaser.Scene {
 
         this.physics.add.collider(this.ball, this.paddle, this.hitPaddle, null, this);
         this.physics.add.collider(this.ball, this.bricks, this.hitBrick, null, this);
+        this.physics.add.collider(this.ball, this.enemyShip, this.hitEnemy, null, this);
+
     }
 
     update() {
+        // Убедимся, что корабль продолжает движение
+        if (this.enemyShip && this.enemyShip.body) {
+            if (this.enemyShip.body.blocked.left || this.enemyShip.body.blocked.right) {
+                this.enemyShip.setVelocityX(-this.enemyShip.body.velocity.x); // Инвертируем направление
+            }
+        }
+
+        // Убедимся, что мяч не застревает
+        if (this.ball && Math.abs(this.ball.body.velocity.x) < 50 && this.ball.body.velocity.y !== 0) {
+            this.ball.setVelocityX(200 * (Math.random() > 0.5 ? 1 : -1));
+        }
+
+        // Управление платформой
         if (this.cursors.left.isDown) {
             this.paddle.setVelocityX(-300);
         } else if (this.cursors.right.isDown) {
@@ -214,47 +276,115 @@ class GameScene extends Phaser.Scene {
             this.paddle.setVelocityX(0);
         }
 
-        if (this.ball.getData('onPaddle')) {
-            this.ball.x = this.paddle.x;
-        }
-
-        if (this.ball.y > this.sys.game.config.height) {
+        // Проверяем, если мяч упал за нижнюю границу
+        if (this.ball && this.ball.y > this.sys.game.config.height) {
             this.loseLife();
         }
     }
 
-    updateTimer() {
-        this.remainingTime--;
-        this.timerText.setText('Time: ' + this.remainingTime);
 
-        if (this.remainingTime <= 0) {
-            this.scene.start('EndScene', { score: this.score });
+    cleanUp() {
+        if (this.enemyCollider) {
+            this.physics.world.removeCollider(this.enemyCollider);
+            this.enemyCollider = null;
+        }
+        if (this.enemyShip) {
+            this.enemyShip.destroy();
+            this.enemyShip = null;
+        }
+        if (this.backgroundMusic) {
+            this.backgroundMusic.stop();
+            this.backgroundMusic.destroy();
         }
     }
+    updateTimer() {
+        this.remainingTime--;
+        const minutes = Math.floor(this.remainingTime / 60);
+        const seconds = this.remainingTime % 60;
+        this.timerText.setText(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
+
+        if (this.remainingTime <= 0) {
+            this.endGame(false); // Завершаем игру как провал
+        }
+    }
+
 
     createBricks() {
         this.bricks = this.physics.add.staticGroup();
 
         const offsetX = 20; // Отступ слева и справа
-        const offsetY = 70; // Отступ сверху
+        const offsetY = 130; // Отступ сверху
         const blockWidth = (350 - offsetX * 2) / 10; // Ширина блока с учётом отступов
         const blockHeight = 20; // Высота блока
-        const rows = 3; // Количество рядов
-        const colors = ['brickRed', 'brickYellow', 'brickGreen']; // Цвета блоков
-        const points = [20, 15, 10]; // Очки за каждый цвет
+        const rows = 1; // Количество рядов красных блоков
+        const colors = ['brickYellow', 'brickRed']; // Цвета блоков
+        const points = [10, 20]; // Очки за каждый цвет
 
+        // Добавляем желтые блоки в верхний ряд
+        for (let col = 0; col < 10; col++) {
+            const x = col * blockWidth + offsetX + blockWidth / 2;
+            const y = offsetY - blockHeight; // Ряд выше красных блоков
+            const brick = this.bricks.create(x, y, colors[0]).setOrigin(0.5, 0.5);
+            brick.displayWidth = blockWidth; // Подгоняем ширину блока
+            brick.displayHeight = blockHeight; // Подгоняем высоту блока
+            brick.setData('points', points[0]); // Устанавливаем очки
+        }
+
+        // Добавляем красные блоки в следующий ряд
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < 10; col++) {
                 const x = col * blockWidth + offsetX + blockWidth / 2;
                 const y = row * blockHeight + offsetY;
-                const colorIndex = row % colors.length; // Циклический выбор цвета
-                const brick = this.bricks.create(x, y, colors[colorIndex]).setOrigin(0.5, 0.5);
+                const brick = this.bricks.create(x, y, colors[1]).setOrigin(0.5, 0.5);
                 brick.displayWidth = blockWidth; // Подгоняем ширину блока
                 brick.displayHeight = blockHeight; // Подгоняем высоту блока
-                brick.setData('points', points[colorIndex]); // Устанавливаем очки
+                brick.setData('points', points[1]); // Устанавливаем очки
             }
         }
     }
+
+    createExplosion(x, y) {
+        const explosion = this.add.image(x, y, 'explosion'); // Добавляем изображение взрыва
+        explosion.setScale(0.6); // Масштабируем изображение
+
+        // Удаляем взрыв через 500 мс
+        this.time.delayedCall(500, () => {
+            explosion.destroy();
+        });
+    }
+
+    hitEnemy(ball, enemyShip) {
+        if (!enemyShip.active) return;
+
+        this.enemyHits += 1;
+
+        if (this.enemyHits >= 2) {
+            this.createExplosion(enemyShip.x, enemyShip.y);
+            enemyShip.destroy();
+            this.enemyShip = null;
+
+            // Проверяем, остались ли блоки
+            if (this.bricks.countActive() === 0 && this.remainingTime > 0) {
+                this.endGame(true); // Завершаем игру с успехом
+            }
+        } else {
+            const hitText = this.add.text(enemyShip.x, enemyShip.y - 20, `Hit: ${this.enemyHits}/2`, {
+                fontSize: '14px',
+                fill: '#FFFF00',
+            }).setOrigin(0.5);
+            this.time.delayedCall(500, () => hitText.destroy());
+        }
+
+        ball.setVelocityY(-Math.abs(ball.body.velocity.y));
+        if (Math.abs(ball.body.velocity.x) < 50) {
+            ball.setVelocityX(150 * (Math.random() > 0.5 ? 1 : -1));
+        }
+        if (Math.abs(ball.body.velocity.y) < 100) {
+            ball.setVelocityY(-200);
+        }
+    }
+
+
 
     startBall() {
         if (this.ball.getData('onPaddle')) {
@@ -267,14 +397,12 @@ class GameScene extends Phaser.Scene {
         this.ball.setVelocity(0);
         this.ball.setData('onPaddle', true);
         this.ball.x = this.paddle.x;
-        this.ball.y = this.paddle.y - 30;
+        this.ball.y = this.paddle.y - 35;
     }
 
     loseLife() {
-        const { width, height } = this.cameras.main;
-
-        this.lives -= 1;
-        this.score -= 20;
+        this.lives = Math.max(0, this.lives - 1);
+        this.score = Math.max(0, this.score - 20);
         this.livesText.setText('Lives: ' + this.lives);
         this.scoreText.setText('Score: ' + this.score);
 
@@ -289,14 +417,12 @@ class GameScene extends Phaser.Scene {
         });
 
         if (this.lives <= 0) {
-            this.time.delayedCall(1500, () => {
-                this.scene.start('EndScene', { score: this.score });
-            });
+            this.endGame(false); // Завершаем игру как провал
         } else {
             this.resetBall();
         }
-
     }
+
 
     hitPaddle(ball, paddle) {
         const diff = ball.x - paddle.x;
@@ -307,28 +433,39 @@ class GameScene extends Phaser.Scene {
         const points = brick.getData('points');
         this.score += points;
         this.scoreText.setText('Score: ' + this.score);
+
+        // Отображение очков за сбитый блок
         const scoreText = this.add.text(brick.x + 20, brick.y, `+${points}`, {
             fontSize: '14px',
-            fill: '#FFFF00'
+            fill: '#FFFF00',
         }).setOrigin(0.5);
+        this.time.delayedCall(300, () => scoreText.destroy());
 
-        this.time.delayedCall(300, () => {
-            scoreText.destroy();
-        });
+        // Анимация взрыва
         const explosion = this.add.image(brick.x - 20, brick.y, 'explosion');
         explosion.setScale(0.6);
+        this.time.delayedCall(200, () => explosion.destroy());
 
-        this.time.delayedCall(200, () => {
-            explosion.destroy();
-        });
+        brick.destroy(); // Уничтожаем блок
 
-        brick.destroy();
-
-        if (this.bricks.countActive() === 0) {
-            this.scene.start('EndScene', { score: this.score });
+        // Проверяем, остались ли блоки и корабль
+        if (this.bricks.countActive() === 0 && this.enemyShip === null && this.remainingTime > 0) {
+            this.endGame(true); // Завершаем игру с успехом
         }
     }
+
+
+
+    endGame(isMissionSuccessful) {
+        this.scene.start('EndScene', {
+            score: this.score,
+            missionStatus: isMissionSuccessful ? 'success' : 'failure',
+        });
+    }
+    
+
 }
+
 
 // === Сцена 3: Конечная ===
 class EndScene extends Phaser.Scene {
@@ -338,19 +475,41 @@ class EndScene extends Phaser.Scene {
 
     init(data) {
         this.finalScore = data.score;
+        this.missionStatus = data.missionStatus; // Получаем статус миссии
     }
+
     preload() {
-        this.load.image('background-end', './img/start-back.png');
+        this.load.image('background-end', './img/background.png');
     }
+
     create() {
         const { width, height } = this.cameras.main;
         const backgroundEnd = this.add.image(width / 2, height / 2, 'background-end');
         backgroundEnd.setDisplaySize(width, height);
 
-        this.add.text(170, 150, `Game Over!`, { fontSize: '24px', fill: '#FFF' }).setOrigin(0.5);
-        this.add.text(170, 200, `Score: ${this.finalScore}`, { fontSize: '20px', fill: '#FFD700' }).setOrigin(0.5);
+        const missionText = this.missionStatus === 'success'
+            ? 'Миссия выполнена!'
+            : 'Миссия провалена!';
+        const missionColor = this.missionStatus === 'success' ? '#FFFF00' : '#FF0000';
 
-        const playAgain = this.add.text(170, 300, 'Play Again', { fontSize: '20px', fill: '#FFD700' })
+        this.add.text(width / 2, 100, missionText, {
+            fontFamily: 'Rubik', // Устанавливаем шрифт Rubik
+            fontSize: '24px', // Увеличенный размер текста
+            fill: missionColor,
+            fontStyle: 'bold', // Полужирный стиль
+            align: 'center'
+        }).setOrigin(0.5);
+    
+
+        this.add.text(width / 2, height / 2, `Score: ${this.finalScore}`, {
+            fontSize: '20px',
+            fill: '#FFD700',
+        }).setOrigin(0.5);
+
+        const playAgain = this.add.text(width / 2, height / 2 + 50, 'Play Again', {
+            fontSize: '20px',
+            fill: '#FFD700',
+        })
             .setInteractive()
             .setOrigin(0.5);
 
@@ -359,6 +518,7 @@ class EndScene extends Phaser.Scene {
         });
     }
 }
+
 
 // Конфигурация игры
 const config = {
