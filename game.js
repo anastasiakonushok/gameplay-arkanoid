@@ -25,14 +25,14 @@ class IntroScene extends Phaser.Scene {
             Давным-давно в далёкой-далёкой галактике...
 
 
-            Эпизод I
+            ЭПИЗОД I
             Пробуждение Арканоида
 
 
-            Галактика в опасности.На горизонте появился вражеский корабль,угрожающий уничтожить мирные планеты.
+            Галактика в опасности. На горизонте появился вражеский корабль, угрожающий уничтожить мирные планеты.
 
             Твоя миссия:
-            разрушить блоки защиты корабля,победить врага и спасти планету.
+            разрушить блоки защиты корабля, победить врага и спасти планету.
             
             Да пребудет с тобой сила!
         `, {
@@ -77,7 +77,7 @@ class StartScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('background-start', './img/house-moon.png');
+        this.load.image('background-start', './img/star-wars-back.png');
         this.load.image('logo', './img/arkanoid-logo.png');
         this.load.image('playButton', './img/start-btn.png'); // Кнопка
         this.load.image('borderLeft', './img/edge_left.png'); // Левая часть контура
@@ -91,8 +91,8 @@ class StartScene extends Phaser.Scene {
         const backgroundStart = this.add.image(width / 2, height / 2, 'background-start');
         backgroundStart.setDisplaySize(width, height); // Масштабируем фон под размеры сцены
         // Кнопка Play
-        
-        const playButton = this.add.image(width / 2, height / 2, 'playButton').setInteractive();
+
+        const playButton = this.add.image(width / 2, height / 2 + 100, 'playButton').setInteractive();
         playButton.setScale(0.5);
 
         playButton.on('pointerdown', () => {
@@ -127,9 +127,9 @@ class GameScene extends Phaser.Scene {
         this.load.image('brickRed', './img/element_red_rectangle.png');
         this.load.image('brickYellow', './img/element_yellow_rectangle.png');
         this.load.image('brickGreen', './img/element_green_rectangle.png');
-        this.load.image('borderLeft', './img/edge_left.png'); 
-        this.load.image('borderRight', './img/edge_right.png'); 
-        this.load.image('borderTop', './img/edge_top.png'); 
+        this.load.image('borderLeft', './img/edge_left.png');
+        this.load.image('borderRight', './img/edge_right.png');
+        this.load.image('borderTop', './img/edge_top.png');
 
         // Загрузка GIF-картинки взрыва
         this.load.image('explosion', './img/fireball_side_small_explode.gif');
@@ -272,7 +272,7 @@ class GameScene extends Phaser.Scene {
 
     loseLife() {
         const { width, height } = this.cameras.main;
-        
+
         this.lives -= 1;
         this.score -= 20;
         this.livesText.setText('Lives: ' + this.lives);
@@ -295,7 +295,7 @@ class GameScene extends Phaser.Scene {
         } else {
             this.resetBall();
         }
-        
+
     }
 
     hitPaddle(ball, paddle) {
@@ -380,5 +380,13 @@ const config = {
     scene: [IntroScene, StartScene, GameScene, EndScene]
 };
 
+
+// Загрузка шрифта перед запуском игры
+document.fonts.load('16px Rubik').then(() => {
+    const game = new Phaser.Game(config); // Инициализация игры
+}).catch((error) => {
+    console.error('Ошибка при загрузке шрифта:', error);
+    const game = new Phaser.Game(config); // Всё равно запускаем игру, даже если шрифт не загрузился
+});
 const game = new Phaser.Game(config);
 
