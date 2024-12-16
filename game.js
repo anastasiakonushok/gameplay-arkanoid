@@ -79,7 +79,7 @@ class StartScene extends Phaser.Scene {
     preload() {
         this.load.image('background-start', './img/star-wars-back.png');
         this.load.image('logo', './img/arkanoid-logo.png');
-        this.load.image('playButton', './img/start-btn.png'); // Кнопка
+        this.load.image('playButton', './img/button-start.png'); // Кнопка
         this.load.image('borderLeft', './img/edge_left.png'); // Левая часть контура
         this.load.image('borderRight', './img/edge_right.png'); // Правая часть контура
         this.load.image('borderTop', './img/edge_top.png'); // Верхняя часть контура
@@ -93,7 +93,7 @@ class StartScene extends Phaser.Scene {
         // Кнопка Play
 
         const playButton = this.add.image(width / 2, height / 2 + 100, 'playButton').setInteractive();
-        playButton.setScale(0.5);
+        playButton.setScale(0.4);
 
         playButton.on('pointerdown', () => {
             this.scene.start('GameScene', { score: 0, lives: 3, time: 60 });
