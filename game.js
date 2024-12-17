@@ -37,10 +37,9 @@ class IntroScene extends Phaser.Scene {
             Пробуждение Арканоида
 
 
-            Галактика в опасности. На горизонте появился вражеский корабль, угрожающий уничтожить мирные планеты.
+            Внимание, на горизонте замечен вражеский корабль. Ваша миссия защитить вашу мирную планету от имперских захватчиков. 
 
-            Твоя миссия:
-            разрушить блоки защиты корабля, победить врага и спасти планету.
+            В Вашем распоряжении "Небесный таран" - корабль используемый для отражения астероидов. Используйте его и захваченный астероид для уничтожения защитного поля вражеского корабля и спаси планету!
             
             Да пребудет с тобой сила!
         `, {
@@ -63,11 +62,11 @@ class IntroScene extends Phaser.Scene {
             }
         });
 
-        // Текст "Нажмите, чтобы пропустить"
-        const skipText = this.add.text(width / 2, height - 30, 'Нажмите, чтобы пропустить', {
-            fontSize: '14px',
-            color: '#FFFFFF'
-        }).setOrigin(0.5);
+        // // Текст "Нажмите, чтобы пропустить"
+        // const skipText = this.add.text(width / 2, height - 30, 'Нажмите, чтобы пропустить', {
+        //     fontSize: '14px',
+        //     color: '#FFFFFF'
+        // }).setOrigin(0.5);
 
         // Переход к StartScene при клике
         this.input.once('pointerdown', () => {
@@ -116,7 +115,7 @@ class StartScene extends Phaser.Scene {
         playButton.on('pointerdown', () => {
 
             // Переход к `GameScene` и запуск её музыки
-            this.scene.start('GameScene', { score: 0, lives: 3, time: 60 });
+            this.scene.start('GameScene', { score:0, lives: 3, time: 60 });
         });
 
         const logo = this.add.image(width / 2, 80, 'logo').setInteractive();
@@ -137,7 +136,7 @@ class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('background', './img/background.png');
+        this.load.image('background', './img/game-back-planet.png');
         this.load.image('paddle', './img/paddle-space.png');
         this.load.image('ball', './img/ball-fire.png');
         this.load.image('brickRed', './img/element_red_rectangle.png');
@@ -147,6 +146,8 @@ class GameScene extends Phaser.Scene {
         this.load.image('borderRight', './img/edge_right.png');
         this.load.image('borderTop', './img/edge_top.png');
         this.load.image('enemyShip', './img/space-shooter.png');
+        this.load.image('heart', './img/heart.png'); // Иконка жизни
+        this.load.image('star', './img/star.png');   // Иконка очков
         this.load.audio('backgroundMusic', './audio/imperial-march.mp3');
 
         // Загрузка GIF-картинки взрыва
@@ -166,13 +167,13 @@ class GameScene extends Phaser.Scene {
         this.enemyShip = this.physics.add.sprite(width / 2, 70, 'enemyShip');
         this.enemyShip.setCollideWorldBounds(true); // Позволяет объекту столкнуться с границами мира
         this.enemyShip.setBounce(1); // Обеспечивает отскок при столкновении с границей
-        this.enemyShip.setVelocityX(150); // Задает начальную скорость вправо
+        this.enemyShip.setVelocityX(200); // Задает начальную скорость вправо
         this.enemyHits = 0;
 
         // Фоновая музыка
         this.backgroundMusic = this.sound.add('backgroundMusic', {
             loop: true,
-            volume: 0.5
+            volume: 0.2
         });
         this.backgroundMusic.play();
         this.events.on('shutdown', () => {
@@ -202,9 +203,14 @@ class GameScene extends Phaser.Scene {
         borderRight.displayHeight = height;
         borderTop.displayWidth = width; // Полная ширина экрана
 
-        // Текст для отображения очков, жизней и таймера
-        this.scoreText = this.add.text(10, 10, 'Score: ' + this.score, { fontSize: '16px', fill: '#FFF' });
-        this.livesText = this.add.text(250, 10, 'Lives: ' + this.lives, { fontSize: '16px', fill: '#FFF' });
+        // Иконка звезды для очков
+        this.starIcon = this.add.image(30, 30, 'star').setScale(0.8).setOrigin(0.5, 0.5);
+        this.scoreText = this.add.text(50, 25, this.score, { fontSize: '16px', fill: '#FFF' });
+
+        // Иконка сердечка для жизней
+        this.heartIcon = this.add.image(290, 30, 'heart').setScale(0.8).setOrigin(0.5, 0.5);
+        this.livesText = this.add.text(310, 25, this.lives, { fontSize: '16px', fill: '#FFF' });
+
         this.timerText = this.add.text(width / 2, 20, '01:30', {
             fontSize: '24px',
             fill: '#FFFF00',
@@ -220,7 +226,7 @@ class GameScene extends Phaser.Scene {
         });
 
         // Платформа
-        this.paddle = this.physics.add.sprite(width / 2, height - 50, 'paddle').setImmovable();
+        this.paddle = this.physics.add.sprite(width / 2, height - 100, 'paddle').setImmovable();
         this.paddle.body.collideWorldBounds = true;
 
         // Мяч
@@ -228,7 +234,7 @@ class GameScene extends Phaser.Scene {
         this.ball.setCollideWorldBounds(true);
         this.ball.setBounce(1);
         this.ball.setData('onPaddle', true);
-        this.ball.setDisplaySize(30, 30); 
+        this.ball.setDisplaySize(30, 30);
 
         // Отключаем коллизию мяча с нижней границей
         this.physics.world.setBoundsCollision(true, true, true, false);
@@ -304,9 +310,11 @@ class GameScene extends Phaser.Scene {
         this.timerText.setText(`${minutes}:${seconds < 10 ? '0' : ''}${seconds}`);
 
         if (this.remainingTime <= 0) {
+            this.timer.remove(); // Останавливаем таймер
             this.endGame(false); // Завершаем игру как провал
         }
     }
+
 
 
     createBricks() {
@@ -363,10 +371,7 @@ class GameScene extends Phaser.Scene {
             enemyShip.destroy();
             this.enemyShip = null;
 
-            // Проверяем, остались ли блоки
-            if (this.bricks.countActive() === 0 && this.remainingTime > 0) {
-                this.endGame(true); // Завершаем игру с успехом
-            }
+            this.checkMissionCompletion();
         } else {
             const hitText = this.add.text(enemyShip.x, enemyShip.y - 20, `Hit: ${this.enemyHits}/2`, {
                 fontSize: '14px',
@@ -376,13 +381,8 @@ class GameScene extends Phaser.Scene {
         }
 
         ball.setVelocityY(-Math.abs(ball.body.velocity.y));
-        if (Math.abs(ball.body.velocity.x) < 50) {
-            ball.setVelocityX(150 * (Math.random() > 0.5 ? 1 : -1));
-        }
-        if (Math.abs(ball.body.velocity.y) < 100) {
-            ball.setVelocityY(-200);
-        }
     }
+
 
 
 
@@ -403,8 +403,8 @@ class GameScene extends Phaser.Scene {
     loseLife() {
         this.lives = Math.max(0, this.lives - 1);
         this.score = Math.max(0, this.score - 20);
-        this.livesText.setText('Lives: ' + this.lives);
-        this.scoreText.setText('Score: ' + this.score);
+        this.livesText.setText(this.lives);
+        this.scoreText.setText(this.score);
 
         const message = this.add.text(this.paddle.x + 80, this.paddle.y - 20, `-20`, {
             fontSize: '16px',
@@ -432,7 +432,7 @@ class GameScene extends Phaser.Scene {
     hitBrick(ball, brick) {
         const points = brick.getData('points');
         this.score += points;
-        this.scoreText.setText('Score: ' + this.score);
+        this.scoreText.setText(this.score);
 
         // Отображение очков за сбитый блок
         const scoreText = this.add.text(brick.x + 20, brick.y, `+${points}`, {
@@ -442,17 +442,13 @@ class GameScene extends Phaser.Scene {
         this.time.delayedCall(300, () => scoreText.destroy());
 
         // Анимация взрыва
-        const explosion = this.add.image(brick.x - 20, brick.y, 'explosion');
-        explosion.setScale(0.6);
-        this.time.delayedCall(200, () => explosion.destroy());
+        this.createExplosion(brick.x, brick.y);
 
         brick.destroy(); // Уничтожаем блок
 
-        // Проверяем, остались ли блоки и корабль
-        if (this.bricks.countActive() === 0 && this.enemyShip === null && this.remainingTime > 0) {
-            this.endGame(true); // Завершаем игру с успехом
-        }
+        this.checkMissionCompletion();
     }
+
 
 
 
@@ -462,7 +458,13 @@ class GameScene extends Phaser.Scene {
             missionStatus: isMissionSuccessful ? 'success' : 'failure',
         });
     }
-    
+    checkMissionCompletion() {
+        if (this.bricks.countActive() === 0 && !this.enemyShip) {
+            this.timer.remove(); // Останавливаем таймер
+            this.endGame(true); // Завершаем игру с успехом
+        }
+    }
+
 
 }
 
@@ -499,7 +501,7 @@ class EndScene extends Phaser.Scene {
             fontStyle: 'bold', // Полужирный стиль
             align: 'center'
         }).setOrigin(0.5);
-    
+
 
         this.add.text(width / 2, height / 2, `Score: ${this.finalScore}`, {
             fontSize: '20px',
