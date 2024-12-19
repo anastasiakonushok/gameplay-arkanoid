@@ -22,5 +22,8 @@
 [Играть в Arkanoid: Звёздные Войны](https://anastasiakonushok.github.io/gameplay-arkanoid/)
 
 ---
+![Скрин](https://anastasiakonushok.github.io/gameplay-arkanoid/img/screen.png)
+
+---
 
 Приятной игры и пусть Сила будет с вами!
