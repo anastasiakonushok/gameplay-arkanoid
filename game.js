@@ -468,6 +468,7 @@ class EndScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background-end', './img/background.png');
+        this.load.image('restart-btn', './img/restart-btn.png');
     }
 
     create() {
@@ -480,29 +481,27 @@ class EndScene extends Phaser.Scene {
             : 'Миссия провалена! Ваша планета осталась беззащитна';
         const missionColor = this.missionStatus === 'success' ? '#FFFF00' : '#FF0000';
 
-        this.add.text(width / 2, 100, missionText, {
-            fontFamily: 'Rubik', // Устанавливаем шрифт Rubik
-            fontSize: '24px', // Увеличенный размер текста
+        this.add.text(width / 2, 200, missionText, {
+            fontFamily: 'Rubik', 
+            fontSize: '20px', 
             fill: missionColor,
-            fontStyle: 'bold', // Полужирный стиль
+            fontStyle: 'bold',
             align: 'center',
             wordWrap: { width: width - 10 }
         }).setOrigin(0.5);
 
 
-        this.add.text(width / 2, height / 2, `Score: ${this.finalScore}`, {
-            fontSize: '20px',
+        this.add.text(width / 2, height / 2, `счет: ${this.finalScore}`, {
+            fontFamily: 'Rubik', 
+            fontSize: '32px',
             fill: '#FFD700',
+            fontStyle: 'bold',
+            align: 'center',
         }).setOrigin(0.5);
+        const playRestart = this.add.image(width / 2, height / 2 + 150, 'restart-btn').setInteractive();
+        playRestart.setScale(0.4);
 
-        const playAgain = this.add.text(width / 2, height / 2 + 50, 'Play Again', {
-            fontSize: '20px',
-            fill: '#FFD700',
-        })
-            .setInteractive()
-            .setOrigin(0.5);
-
-        playAgain.on('pointerdown', () => {
+        playRestart.on('pointerdown', () => {
             this.scene.start('StartScene');
         });
     }
@@ -513,8 +512,8 @@ class EndScene extends Phaser.Scene {
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container', // Контейнер для игры
-    width: 350, // Базовая ширина
-    height: 600, // Базовая высота
+    width: 350, 
+    height: 600, 
     backgroundColor: '#000000',
     scale: {
         mode: Phaser.Scale.FIT, // Подгонка игры под экран
@@ -530,12 +529,12 @@ const config = {
 };
 
 
-// Загрузка шрифта перед запуском игры
+
 document.fonts.load('16px Rubik').then(() => {
-    const game = new Phaser.Game(config); // Инициализация игры
+    const game = new Phaser.Game(config);
 }).catch((error) => {
     console.error('Ошибка при загрузке шрифта:', error);
-    const game = new Phaser.Game(config); // Всё равно запускаем игру, даже если шрифт не загрузился
+    const game = new Phaser.Game(config); 
 });
 const game = new Phaser.Game(config);
 
