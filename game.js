@@ -56,7 +56,7 @@ class IntroScene extends Phaser.Scene {
             duration: 15000, // Длительность анимации (15 секунд)
             ease: 'Linear',
             onComplete: () => {
-                this.scene.start('StartScene'); 
+                this.scene.start('StartScene');
             }
         });
         // Переход к StartScene при клике
@@ -102,7 +102,7 @@ class StartScene extends Phaser.Scene {
         playButton.on('pointerdown', () => {
 
             // Переход к `GameScene` и запуск её музыки
-            this.scene.start('GameScene', { score:0, lives: 3, time: 60 });
+            this.scene.start('GameScene', { score: 0, lives: 3, time: 60 });
         });
 
         const logo = this.add.image(width / 2, 80, 'logo').setInteractive();
@@ -172,21 +172,21 @@ class GameScene extends Phaser.Scene {
 
         // Левая граница: высота на всю длину камеры
         const borderLeft = this.add.image(0, height / 2, 'borderLeft')
-            .setOrigin(0.5, 0.5); 
-        borderLeft.displayHeight = height; 
+            .setOrigin(0.5, 0.5);
+        borderLeft.displayHeight = height;
 
         // Правая граница: высота на всю длину камеры
         const borderRight = this.add.image(width, height / 2, 'borderRight')
-            .setOrigin(0.5, 0.5); 
-        borderRight.displayHeight = height; 
+            .setOrigin(0.5, 0.5);
+        borderRight.displayHeight = height;
 
         // Верхняя граница: ширина на всю длину камеры
         const borderTop = this.add.image(width / 2, 0, 'borderTop')
-            .setOrigin(0.5, 0.5); 
-        borderTop.displayWidth = width; 
+            .setOrigin(0.5, 0.5);
+        borderTop.displayWidth = width;
 
         // Настройка размеров и позиции
-        borderLeft.displayHeight = height; 
+        borderLeft.displayHeight = height;
         borderRight.displayHeight = height;
         borderTop.displayWidth = width;
 
@@ -223,7 +223,7 @@ class GameScene extends Phaser.Scene {
         this.ball.setData('onPaddle', true);
         this.ball.setDisplaySize(30, 30);
 
-        
+
         this.physics.world.setBoundsCollision(true, true, true, false);
 
         // Блоки
@@ -248,19 +248,19 @@ class GameScene extends Phaser.Scene {
     }
 
     update() {
-       
+
         if (this.enemyShip && this.enemyShip.body) {
             if (this.enemyShip.body.blocked.left || this.enemyShip.body.blocked.right) {
                 this.enemyShip.setVelocityX(-this.enemyShip.body.velocity.x); // Инвертируем направление
             }
         }
 
-     
+
         if (this.ball && Math.abs(this.ball.body.velocity.x) < 50 && this.ball.body.velocity.y !== 0) {
             this.ball.setVelocityX(200 * (Math.random() > 0.5 ? 1 : -1));
         }
 
-      
+
         if (this.cursors.left.isDown) {
             this.paddle.setVelocityX(-300);
         } else if (this.cursors.right.isDown) {
@@ -314,7 +314,7 @@ class GameScene extends Phaser.Scene {
         const colors = ['brickYellow', 'brickRed']; // Цвета блоков
         const points = [10, 20]; // Очки за каждый цвет
 
-       
+
         for (let col = 0; col < 10; col++) {
             const x = col * blockWidth + offsetX + blockWidth / 2;
             const y = offsetY - blockHeight; // Ряд выше красных блоков
@@ -324,7 +324,7 @@ class GameScene extends Phaser.Scene {
             brick.setData('points', points[0]); // Устанавливаем очки
         }
 
-      
+
         for (let row = 0; row < rows; row++) {
             for (let col = 0; col < 10; col++) {
                 const x = col * blockWidth + offsetX + blockWidth / 2;
@@ -482,22 +482,24 @@ class EndScene extends Phaser.Scene {
         const missionColor = this.missionStatus === 'success' ? '#FFFF00' : '#FF0000';
 
         this.add.text(width / 2, 200, missionText, {
-            fontFamily: 'Rubik', 
-            fontSize: '20px', 
+            fontFamily: 'Rubik',
+            fontSize: '20px',
             fill: missionColor,
             fontStyle: 'bold',
             align: 'center',
             wordWrap: { width: width - 10 }
         }).setOrigin(0.5);
 
+        if (this.missionStatus === 'success') {
+            this.add.text(width / 2, height / 2, `Счёт: ${this.finalScore}`, {
+                fontFamily: 'Rubik',
+                fontSize: '32px',
+                fill: '#FFD700',
+                fontStyle: 'bold',
+                align: 'center',
+            }).setOrigin(0.5);
+        }
 
-        this.add.text(width / 2, height / 2, `счет: ${this.finalScore}`, {
-            fontFamily: 'Rubik', 
-            fontSize: '32px',
-            fill: '#FFD700',
-            fontStyle: 'bold',
-            align: 'center',
-        }).setOrigin(0.5);
         const playRestart = this.add.image(width / 2, height / 2 + 150, 'restart-btn').setInteractive();
         playRestart.setScale(0.4);
 
@@ -505,6 +507,7 @@ class EndScene extends Phaser.Scene {
             this.scene.start('StartScene');
         });
     }
+
 }
 
 
@@ -512,8 +515,8 @@ class EndScene extends Phaser.Scene {
 const config = {
     type: Phaser.AUTO,
     parent: 'game-container', // Контейнер для игры
-    width: 350, 
-    height: 600, 
+    width: 350,
+    height: 600,
     backgroundColor: '#000000',
     scale: {
         mode: Phaser.Scale.FIT, // Подгонка игры под экран
@@ -534,7 +537,7 @@ document.fonts.load('16px Rubik').then(() => {
     const game = new Phaser.Game(config);
 }).catch((error) => {
     console.error('Ошибка при загрузке шрифта:', error);
-    const game = new Phaser.Game(config); 
+    const game = new Phaser.Game(config);
 });
 const game = new Phaser.Game(config);
 
