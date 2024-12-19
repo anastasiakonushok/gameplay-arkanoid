@@ -19,4 +19,8 @@
 
 ---
 
+[Играть в Arkanoid: Звёздные Войны](https://anastasiakonushok.github.io/gameplay-arkanoid/)
+
+---
+
 Приятной игры и пусть Сила будет с вами!
